@@ -1,105 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* AI Portfolio Design System - Deep Space Theme */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Deep Space Color Palette */
+    --space-dark: 239 30% 11%;      /* #0F0C29 */
+    --electric-blue: 260 100% 44%;   /* #4A00E0 */
+    --vibrant-purple: 283 77% 54%;   /* #8E2DE2 */
+    --neon-cyan: 180 100% 70%;       /* #00E5FF */
+    --cosmic-white: 0 0% 95%;        /* #F2F2F2 */
+    --space-gray: 240 5% 20%;        /* #333343 */
+    --neural-glow: 260 100% 70%;     /* Neon glow */
+    
+    /* Theme Variables */
+    --background: var(--space-dark);
+    --foreground: var(--cosmic-white);
+    
+    --card: 240 10% 8%;              /* Glassmorphic cards */
+    --card-foreground: var(--cosmic-white);
+    
+    --primary: var(--electric-blue);
+    --primary-foreground: var(--cosmic-white);
+    
+    --secondary: var(--vibrant-purple);
+    --secondary-foreground: var(--cosmic-white);
+    
+    --accent: var(--neon-cyan);
+    --accent-foreground: var(--space-dark);
+    
+    --muted: var(--space-gray);
+    --muted-foreground: 240 5% 65%;
+    
+    --border: 240 15% 15%;
+    --input: 240 10% 12%;
+    --ring: var(--neural-glow);
+    
+    --radius: 1rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--electric-blue)), hsl(var(--vibrant-purple)));
+    --gradient-glow: linear-gradient(90deg, hsl(var(--neon-cyan)), hsl(var(--electric-blue)));
+    --gradient-bg: linear-gradient(135deg, hsl(var(--space-dark)), hsl(240 20% 8%));
+    
+    /* Neural Network Animation */
+    --neural-node: hsl(var(--electric-blue) / 0.6);
+    --neural-connection: hsl(var(--neon-cyan) / 0.3);
+    
+    /* Glass Effects */
+    --glass-bg: hsl(var(--space-gray) / 0.1);
+    --glass-border: hsl(var(--electric-blue) / 0.2);
+    --glass-glow: 0 0 30px hsl(var(--neural-glow) / 0.2);
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    font-family: 'Exo 2', sans-serif;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
+    background: var(--gradient-bg);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-glow);
+  }
+  
+  /* Gradient Text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Neon Glow Effect */
+  .neon-glow {
+    box-shadow: 
+      0 0 5px hsl(var(--neural-glow) / 0.5),
+      0 0 10px hsl(var(--neural-glow) / 0.3),
+      0 0 20px hsl(var(--neural-glow) / 0.2);
+  }
+  
+  /* Neural Network Animations */
+  .neural-node {
+    background: var(--neural-node);
+    border-radius: 50%;
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+  
+  .neural-connection {
+    background: var(--neural-connection);
+    animation: flow 3s linear infinite;
+  }
+  
+  /* Hover Animations */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+      0 20px 40px hsl(var(--neural-glow) / 0.3),
+      var(--glass-glow);
+  }
+  
+  /* Typewriter Effect */
+  .typewriter {
+    overflow: hidden;
+    border-right: 2px solid hsl(var(--accent));
+    white-space: nowrap;
+    animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+  }
+}
+
+@layer utilities {
+  /* Custom Animations */
+  @keyframes pulse-glow {
+    from { box-shadow: 0 0 5px hsl(var(--neural-glow) / 0.5); }
+    to { box-shadow: 0 0 20px hsl(var(--neural-glow) / 0.8); }
+  }
+  
+  @keyframes flow {
+    0% { transform: translateX(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+  }
+  
+  @keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  
+  @keyframes blink-caret {
+    from, to { border-color: transparent; }
+    50% { border-color: hsl(var(--accent)); }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  /* Particle System */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: hsl(var(--neural-glow) / 0.6);
+    animation: float 6s ease-in-out infinite;
   }
 }
