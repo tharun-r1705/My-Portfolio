@@ -176,22 +176,133 @@ export default function ContactSection() {
           </motion.div>
         </motion.div>
 
-        {/* Floating Particles */}
+        {/* AI Neural Network Pattern */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {/* Neural Network Nodes */}
+          {[...Array(8)].map((_, i) => (
             <motion.div
-              key={i}
+              key={`node-${i}`}
               initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 0.6, scale: 1 }}
-              transition={{ duration: 2, delay: i * 0.1 }}
-              className="absolute neural-node w-1 h-1"
+              animate={{ opacity: 0.8, scale: 1 }}
+              transition={{ duration: 2, delay: i * 0.2 }}
+              className="absolute"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${i * 0.2}s`,
+                left: `${15 + (i % 4) * 25}%`,
+                top: `${20 + Math.floor(i / 4) * 60}%`,
               }}
-            />
+            >
+              <div className="relative">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-2 border-electric-blue rounded-lg flex items-center justify-center"
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                    className="w-3 h-3 bg-gradient-primary rounded-full"
+                  />
+                </motion.div>
+                
+                {/* Connection lines to next nodes */}
+                {i < 7 && (
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 1.5, delay: 1 + i * 0.2 }}
+                    className="absolute top-1/2 left-8 w-16 h-px bg-gradient-to-r from-electric-blue to-transparent origin-left"
+                  >
+                    <motion.div
+                      animate={{ x: [0, 60, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
+                      className="w-2 h-2 bg-neon-cyan rounded-full -mt-1"
+                    />
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
           ))}
+
+          {/* Floating AI Symbols */}
+          {['🤖', '🧠', '⚡', '🔬', '💡', '🌐'].map((symbol, i) => (
+            <motion.div
+              key={`symbol-${i}`}
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ 
+                opacity: [0.3, 0.7, 0.3], 
+                y: [-20, -100, -20],
+                x: [0, 50, 0] 
+              }}
+              transition={{ 
+                duration: 8 + i * 2, 
+                repeat: Infinity, 
+                delay: i * 1.5,
+                ease: "easeInOut" 
+              }}
+              className="absolute text-2xl opacity-30"
+              style={{
+                left: `${10 + i * 15}%`,
+                top: `${80 + (i % 2) * 10}%`,
+              }}
+            >
+              {symbol}
+            </motion.div>
+          ))}
+
+          {/* Data Stream Lines */}
+          <svg className="absolute inset-0 w-full h-full opacity-20">
+            {[...Array(6)].map((_, i) => (
+              <motion.path
+                key={`stream-${i}`}
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 0.6 }}
+                transition={{ duration: 3, delay: i * 0.5, repeat: Infinity }}
+                d={`M ${20 + i * 15} 10 Q ${50 + i * 10} ${30 + i * 15} ${80 + i * 5} ${60 + i * 10}`}
+                stroke="url(#aiGradient)"
+                strokeWidth="1"
+                fill="none"
+                strokeDasharray="5,5"
+              />
+            ))}
+            <defs>
+              <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(var(--electric-blue))" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="hsl(var(--neon-cyan))" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="hsl(var(--vibrant-purple))" stopOpacity="0.4" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Circuit Board Pattern */}
+          <div className="absolute top-10 right-10 opacity-10">
+            <motion.svg
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ duration: 2, delay: 2 }}
+              width="200" 
+              height="150" 
+              viewBox="0 0 200 150"
+            >
+              <motion.path
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 4, delay: 1 }}
+                d="M20 20 L50 20 L50 50 L80 50 L80 80 L110 80 L110 110 L140 110 L140 140"
+                stroke="hsl(var(--electric-blue))"
+                strokeWidth="2"
+                fill="none"
+              />
+              <motion.path
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 4, delay: 1.5 }}
+                d="M180 30 L150 30 L150 60 L120 60 L120 90 L90 90 L90 120 L60 120"
+                stroke="hsl(var(--neon-cyan))"
+                strokeWidth="2"
+                fill="none"
+              />
+            </motion.svg>
+          </div>
         </div>
       </div>
     </section>
