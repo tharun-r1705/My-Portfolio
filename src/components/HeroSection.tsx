@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import profilePhoto from '@/assets/profile-photo.jpg';
+import { Cursor, useTypewriter } from 'react-simple-typewriter';
 
 export default function HeroSection() {
   const scrollToProjects = () => {
@@ -12,25 +13,34 @@ export default function HeroSection() {
 
   const downloadResume = () => {
     // Placeholder for resume download
-    window.open('https://drive.google.com/file/d/your-resume-link', '_blank');
+    window.open('https://drive.google.com/file/d/1gyu07VaDG360NVizrPQlR8kyL6GIELe2/view?usp=sharing', '_blank');
   };
 
+  const [text] = useTypewriter({
+    words: ['AI Developer', 'Fullstack Developer'],
+    loop: true,
+    typeSpeed: 120,
+    deleteSpeed: 80,
+  });
+
   return (
-    <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      <div className="container mx-auto px-6 text-center relative z-10">
+    <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+      <div className="container mx-auto px-6 text-center relative z-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-8"
+          className="mb-8 relative z-30"
         >
           <div className="relative inline-block">
             <img
               src={profilePhoto}
               alt="Tharun R - AI Developer"
-              className="w-40 h-40 md:w-48 md:h-48 rounded-full mx-auto border-4 border-electric-blue neon-glow"
+              className="w-40 h-40 md:w-48 md:h-48 rounded-full mx-auto border-4 border-electric-blue neon-glow relative z-30 shadow-2xl"
             />
             <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-20 animate-pulse-glow"></div>
+            {/* Ensure the photo is above navbar with a subtle background */}
+            <div className="absolute inset-0 rounded-full bg-space-dark/10 backdrop-blur-sm -z-10"></div>
           </div>
         </motion.div>
 
@@ -50,7 +60,8 @@ export default function HeroSection() {
           className="mb-8"
         >
           <h2 className="font-orbitron text-xl md:text-3xl lg:text-4xl text-accent mb-4">
-            AI Developer & Fullstack Engineer
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric-blue to-purple-500">{text}</span>
+            <Cursor cursorStyle='|' />
           </h2>
           <div className="max-w-3xl mx-auto">
             <motion.p
@@ -99,7 +110,7 @@ export default function HeroSection() {
             size="lg"
             className="border-2 border-electric-blue text-electric-blue hover:bg-electric-blue hover:text-cosmic-white font-exo font-semibold px-8 py-4 rounded-full hover-lift transition-all duration-300"
           >
-            Download Resume
+            View Resume
           </Button>
         </motion.div>
 

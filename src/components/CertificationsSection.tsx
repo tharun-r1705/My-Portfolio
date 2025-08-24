@@ -152,7 +152,7 @@ export default function CertificationsSection() {
             size="lg"
             className="bg-gradient-primary hover:bg-gradient-glow text-cosmic-white font-exo font-semibold px-8 py-4 rounded-full neon-glow hover-lift"
           >
-            <a href="https://linkedin.com/in/tharun-r" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.linkedin.com/in/tharun-r1705/" target="_blank" rel="noopener noreferrer">
               View All Credentials
             </a>
           </Button>

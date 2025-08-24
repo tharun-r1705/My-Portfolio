@@ -41,7 +41,7 @@ export default function Navigation() {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 w-full z-50 glass-card border-0 border-b border-electric-blue/20"
+      className="fixed top-0 w-full z-40 glass-card border-0 border-b border-electric-blue/20"
     >
       <div className="container mx-auto px-6 py-4">
         <div className="flex justify-between items-center">

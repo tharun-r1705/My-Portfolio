@@ -15,8 +15,8 @@ const projects = [
     image: eduAssistImage,
     technologies: ['React', 'Node.js', 'Langchain', 'OpenAI', 'MongoDB'],
     category: 'AI',
-    liveUrl: '#',
-    githubUrl: '#',
+    //liveUrl: '#',
+    githubUrl: 'https://github.com/tharun-r1705/EduAssist',
   },
   {
     id: 2,
@@ -25,8 +25,8 @@ const projects = [
     image: interviewHelperImage,
     technologies: ['Python', 'TensorFlow', 'React', 'Express', 'NLP'],
     category: 'AI',
-    liveUrl: '#',
-    githubUrl: '#',
+    //liveUrl: '#',
+    githubUrl: 'https://github.com/tharun-r1705/Code-Trio',
   },
   {
     id: 3,
@@ -35,8 +35,8 @@ const projects = [
     image: dataCollectionImage,
     technologies: ['React', 'TypeScript', 'Node.js', 'MongoDB', 'Express'],
     category: 'Fullstack',
-    liveUrl: '#',
-    githubUrl: '#',
+    liveUrl: 'https://smart-data-collection.vercel.app/',
+    githubUrl: 'https://github.com/tharun-r1705/data-frontend-new',
   },
 ];
 
@@ -135,26 +135,41 @@ export default function ProjectsSection() {
               </div>
 
               <div className="flex gap-4">
-                <Button
-                  asChild
-                  size="sm"
-                  className="bg-gradient-primary hover:bg-gradient-glow text-cosmic-white font-exo flex-1"
-                >
-                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                    Live Demo
-                  </a>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="border-electric-blue text-electric-blue hover:bg-electric-blue hover:text-cosmic-white font-exo flex-1"
-                >
-                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                    GitHub
-                  </a>
-                </Button>
-              </div>
+  {project.liveUrl ? (
+    <>
+      <Button
+        asChild
+        size="sm"
+        className="bg-gradient-primary hover:bg-gradient-glow text-cosmic-white font-exo flex-1"
+      >
+        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+          Live Demo
+        </a>
+      </Button>
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className="border-electric-blue text-electric-blue hover:bg-electric-blue hover:text-cosmic-white font-exo flex-1"
+      >
+        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+      </Button>
+    </>
+  ) : (
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="border-electric-blue text-electric-blue hover:bg-electric-blue hover:text-cosmic-white font-exo w-full"
+    >
+      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+        GitHub
+      </a>
+      </Button>
+    )}
+  </div>
             </motion.div>
           ))}
         </div>

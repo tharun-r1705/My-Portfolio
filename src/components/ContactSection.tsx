@@ -1,31 +1,306 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
 import { Sphere, MeshDistortMaterial } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import {
+  MarchingCubes,
+  MarchingCube,
+  Points,
+  PointMaterial,
+  Line,
+  OrbitControls,
+  Float,
+  Text,
+  Trail,
+} from '@react-three/drei';
+import * as THREE from 'three';
+import { useMemo, useRef, useState, useEffect } from 'react';
+
+// AI Brain Visualization Components
+function NeuralCore() {
+  const meshRef = useRef();
+  const [pulse, setPulse] = useState(0);
+  
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return;
+    const t = clock.getElapsedTime();
+    meshRef.current.rotation.y = Math.sin(t * 0.2) * 0.3;
+    meshRef.current.rotation.x = Math.cos(t * 0.15) * 0.2;
+    
+    // Pulse effect
+    setPulse(Math.sin(t * 2) * 0.5 + 0.5);
+  });
+  
+  return (
+    <mesh ref={meshRef}>
+      <sphereGeometry args={[0.8, 32, 32]} />
+      <meshStandardMaterial 
+        color="#00ffff" 
+        emissive="#0088ff"
+        emissiveIntensity={1.5 + pulse}
+        metalness={0.7}
+        roughness={0.2}
+        transparent
+        opacity={0.9}
+      />
+    </mesh>
+  );
+}
+
+function NeuralNode({ position, connections, onHover }) {
+  const meshRef = useRef();
+  const [hovered, setHovered] = useState(false);
+  const { camera } = useThree();
+  
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return;
+    const t = clock.getElapsedTime();
+    
+    // Gentle floating motion
+    meshRef.current.position.y = position[1] + Math.sin(t * 0.5 + position[0]) * 0.05;
+    
+    // Pulsing when hovered
+    if (hovered) {
+      meshRef.current.scale.set(1.2, 1.2, 1.2);
+    } else {
+      meshRef.current.scale.set(1, 1, 1);
+    }
+  });
+  
+  const handlePointerOver = () => {
+    setHovered(true);
+    onHover(position);
+  };
+  
+  const handlePointerOut = () => {
+    setHovered(false);
+  };
+  
+  return (
+    <mesh 
+      ref={meshRef} 
+      position={position}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+    >
+      <sphereGeometry args={[0.15, 16, 16]} />
+      <meshStandardMaterial 
+        color={hovered ? "#ff00ff" : "#00ffff"} 
+        emissive={hovered ? "#aa00ff" : "#0088ff"}
+        emissiveIntensity={hovered ? 1.5 : 0.8}
+        metalness={0.9}
+        roughness={0.1}
+      />
+    </mesh>
+  );
+}
+
+function NeuralConnection({ start, end, active }) {
+  const ref = useRef();
+  
+  useFrame(() => {
+    if (ref.current) {
+      ref.current.material.opacity = active ? 0.7 + Math.sin(performance.now() / 200) * 0.3 : 0.3;
+    }
+  });
+
+  return (
+    <Line
+      ref={ref}
+      points={[start, end]}
+      color={active ? "#ff00ff" : "#00ffff"}
+      lineWidth={active ? 2 : 1}
+      transparent
+    />
+  );
+}
+
+function DataParticle({ path, speed = 1 }) {
+  const meshRef = useRef();
+  const [progress, setProgress] = useState(0);
+  
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return;
+    const t = clock.getElapsedTime();
+    
+    // Move along the path
+    setProgress((t * speed) % 1);
+    
+    // Calculate position along the path
+    const x = path[0] + (path[3] - path[0]) * progress;
+    const y = path[1] + (path[4] - path[1]) * progress;
+    const z = path[2] + (path[5] - path[2]) * progress;
+    
+    meshRef.current.position.set(x, y, z);
+  });
+  
+  return (
+    <mesh ref={meshRef}>
+      <sphereGeometry args={[0.05, 8, 8]} />
+      <meshBasicMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
+    </mesh>
+  );
+}
+
+function AIConceptLabel({ position, text, visible }) {
+  return (
+    <Text
+      position={position}
+      fontSize={0.15}
+      color="#ffffff"
+      anchorX="center"
+      anchorY="middle"
+      transparent
+      opacity={visible ? 1 : 0}
+    >
+      {text}
+    </Text>
+  );
+}
 
 function AIBrain() {
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const [activeConcept, setActiveConcept] = useState(null);
+  const [pulseTrigger, setPulseTrigger] = useState(0);
+  
+  // Generate neural network nodes
+  const nodes = useMemo(() => {
+    const nodeCount = 24;
+    const nodes = [];
+    
+    for (let i = 0; i < nodeCount; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const radius = 1.5 + Math.random() * 0.5;
+      
+      const x = radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.sin(phi) * Math.sin(theta);
+      const z = radius * Math.cos(phi);
+      
+      nodes.push({
+        position: [x, y, z],
+        connections: [], // Will be populated later
+        concept: [
+          "Machine Learning", "Neural Networks", "Deep Learning", 
+          "Computer Vision", "NLP", "Reinforcement Learning",
+          "Data Processing", "Pattern Recognition", "Predictive Analytics"
+        ][Math.floor(Math.random() * 9)]
+      });
+    }
+    
+    // Create connections between nodes
+    for (let i = 0; i < nodes.length; i++) {
+      // Connect to 2-4 other nodes
+      const connectionCount = 2 + Math.floor(Math.random() * 3);
+      const possibleConnections = [...nodes];
+      possibleConnections.splice(i, 1); // Remove self
+      
+      // Shuffle and take first connectionCount
+      for (let j = possibleConnections.length - 1; j > 0; j--) {
+        const k = Math.floor(Math.random() * (j + 1));
+        [possibleConnections[j], possibleConnections[k]] = [possibleConnections[k], possibleConnections[j]];
+      }
+      
+      nodes[i].connections = possibleConnections.slice(0, connectionCount);
+    }
+    
+    return nodes;
+  }, []);
+  
+  // Handle click on canvas to trigger pulse
+  const handleCanvasClick = () => {
+    setPulseTrigger(prev => prev + 1);
+    setActiveConcept(null);
+  };
+  
   return (
-    <Canvas camera={{ position: [0, 0, 5] }}>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      <Sphere args={[1, 100, 200]} scale={2}>
-        <MeshDistortMaterial
-          color="#4A00E0"
-          attach="material"
-          distort={0.3}
-          speed={1.5}
-          roughness={0.2}
-        />
-      </Sphere>
+    <Canvas 
+      dpr={[1, 2]} 
+      camera={{ position: [0, 0, 4], fov: 60 }}
+      onClick={handleCanvasClick}
+    >
+      {/* Lighting */}
+      <ambientLight intensity={0.3} />
+      <pointLight position={[5, 5, 5]} intensity={1.5} color="#00ffff" />
+      <pointLight position={[-5, -5, 5]} intensity={1.2} color="#ff00ff" />
+      <spotLight 
+        position={[0, 0, 10]} 
+        angle={0.3} 
+        penumbra={0.5} 
+        intensity={0.8} 
+        color="#ffffff"
+        castShadow
+      />
+      
+      {/* Neural Core */}
+      <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.5}>
+        <NeuralCore />
+        
+        {/* Neural Nodes */}
+        {nodes.map((node, index) => (
+          <NeuralNode 
+            key={index} 
+            position={node.position} 
+            connections={node.connections}
+            onHover={(pos) => {
+              setHoveredNode(pos);
+              setActiveConcept(node.concept);
+            }}
+          />
+        ))}
+        
+        {/* Neural Connections */}
+        {nodes.map((node, index) => (
+          node.connections.map((target, targetIndex) => {
+            // Only render each connection once
+            if (index < nodes.indexOf(target)) {
+              return (
+                <NeuralConnection 
+                  key={`${index}-${targetIndex}`}
+                  start={node.position}
+                  end={target.position}
+                  active={hoveredNode && (
+                    hoveredNode[0] === node.position[0] && 
+                    hoveredNode[1] === node.position[1] && 
+                    hoveredNode[2] === node.position[2]
+                  )}
+                />
+              );
+            }
+            return null;
+          })
+        ))}
+        
+        {/* Data Particles */}
+        {nodes.slice(0, 8).map((node, index) => (
+          <DataParticle 
+            key={`particle-${index}`}
+            path={[0, 0, 0, ...node.position]}
+            speed={0.3 + index * 0.05}
+          />
+        ))}
+        
+        {/* AI Concept Labels */}
+        {activeConcept && (
+          <AIConceptLabel 
+            position={[0, -2.5, 0]} 
+            text={activeConcept} 
+            visible={!!activeConcept} 
+          />
+        )}
+      </Float>
+      
+      {/* Controls */}
+      <OrbitControls enablePan={false} enableZoom={true} enableRotate={true} />
     </Canvas>
   );
 }
 
+// Social links data
 const socialLinks = [
   {
     name: 'LinkedIn',
-    url: 'https://linkedin.com/in/tharun-r',
+    url: 'https://www.linkedin.com/in/tharun-r1705/',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -34,19 +309,10 @@ const socialLinks = [
   },
   {
     name: 'GitHub',
-    url: 'https://github.com/tharun-r',
+    url: 'https://github.com/tharun-r1705/',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-      </svg>
-    ),
-  },
-  {
-    name: 'Twitter',
-    url: 'https://twitter.com/tharun_r_dev',
-    icon: (
-      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
       </svg>
     ),
   },
@@ -55,10 +321,11 @@ const socialLinks = [
 export default function ContactSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-
+  
   return (
-    <section id="contact" className="py-20 relative">
-      <div className="container mx-auto px-6">
+    <section id="contact" className="py-20 relative overflow-hidden">
+      
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 50 }}
@@ -73,7 +340,7 @@ export default function ContactSection() {
             Ready to collaborate on cutting-edge AI projects and innovative web solutions
           </p>
         </motion.div>
-
+        
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Contact Info */}
           <motion.div
@@ -82,7 +349,7 @@ export default function ContactSection() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="space-y-8"
           >
-            <div className="glass-card p-8">
+            <div className="glass-card p-8 border border-electric-blue/20">
               <h3 className="font-orbitron font-bold text-2xl gradient-text mb-6">
                 Get In Touch
               </h3>
@@ -95,7 +362,7 @@ export default function ContactSection() {
                   </div>
                   <div>
                     <p className="font-exo font-medium text-cosmic-white">Email</p>
-                    <p className="font-exo text-accent">tharun.dev@email.com</p>
+                    <p className="font-exo text-accent">tharunr1705@gmail.com</p>
                   </div>
                 </div>
                 
@@ -107,14 +374,14 @@ export default function ContactSection() {
                   </div>
                   <div>
                     <p className="font-exo font-medium text-cosmic-white">Location</p>
-                    <p className="font-exo text-accent">India</p>
+                    <p className="font-exo text-accent">Erode, Tamilnadu, India</p>
                   </div>
                 </div>
               </div>
             </div>
-
+            
             {/* Social Links */}
-            <div className="glass-card p-8">
+            <div className="glass-card p-8 border border-vibrant-purple/20">
               <h3 className="font-orbitron font-bold text-xl gradient-text mb-6">
                 Connect With Me
               </h3>
@@ -136,18 +403,48 @@ export default function ContactSection() {
               </div>
             </div>
           </motion.div>
-
+          
           {/* AI Brain Visualization */}
           <motion.div
             initial={{ opacity: 0, x: 100 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="h-96 glass-card overflow-hidden"
+            className="space-y-4"
           >
-            <AIBrain />
+            
+            <div className="h-96 glass-card overflow-hidden relative group border border-electric-blue/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-space-dark/50 to-vibrant-purple/20 rounded-lg" />
+              <div className="absolute inset-0 bg-gradient-to-r from-electric-blue/10 via-transparent to-vibrant-purple/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="absolute top-4 left-4 z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 1 }}
+                  className="flex items-center space-x-2 bg-space-dark/80 backdrop-blur-sm px-3 py-2 rounded-full border border-electric-blue/30 shadow-lg shadow-electric-blue/20"
+                >
+                  <div className="w-2 h-2 bg-neon-cyan rounded-full animate-pulse" />
+                  <span className="text-xs font-exo text-neon-cyan">Click Here</span>
+                </motion.div>
+              </div>
+              
+              <div className="absolute top-4 right-4 z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 1.2 }}
+                  className="flex items-center space-x-2 bg-space-dark/80 backdrop-blur-sm px-3 py-2 rounded-full border border-vibrant-purple/30 shadow-lg shadow-vibrant-purple/20"
+                >
+                  <div className="w-2 h-2 bg-vibrant-purple rounded-full animate-pulse" />
+                  <span className="text-xs font-exo text-vibrant-purple">Interactive</span>
+                </motion.div>
+              </div>
+              
+              <AIBrain />
+            </div>
           </motion.div>
         </div>
-
+        
         {/* Call to Action */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -165,7 +462,7 @@ export default function ContactSection() {
             className="inline-block"
           >
             <a
-              href="mailto:tharun.dev@email.com"
+              href="mailto:tharunr1705@gmail.com"
               className="inline-flex items-center space-x-2 bg-gradient-primary hover:bg-gradient-glow text-cosmic-white font-exo font-semibold px-8 py-4 rounded-full neon-glow transition-all duration-300"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -175,135 +472,104 @@ export default function ContactSection() {
             </a>
           </motion.div>
         </motion.div>
-
-        {/* AI Neural Network Pattern */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Neural Network Nodes */}
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={`node-${i}`}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 0.8, scale: 1 }}
-              transition={{ duration: 2, delay: i * 0.2 }}
-              className="absolute"
-              style={{
-                left: `${15 + (i % 4) * 25}%`,
-                top: `${20 + Math.floor(i / 4) * 60}%`,
-              }}
-            >
-              <div className="relative">
+      </div>
+      
+      {/* Background Neural Network Pattern */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Neural Network Nodes */}
+        {[...Array(12)].map((_, i) => (
+          <motion.div
+            key={`node-${i}`}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 0.8, scale: 1 }}
+            transition={{ duration: 2, delay: i * 0.15 }}
+            className="absolute"
+            style={{
+              left: `${10 + (i % 4) * 25}%`,
+              top: `${15 + Math.floor(i / 4) * 70}%`,
+            }}
+          >
+            <div className="relative">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="w-8 h-8 border-2 border-electric-blue rounded-lg flex items-center justify-center"
+              >
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-8 h-8 border-2 border-electric-blue rounded-lg flex items-center justify-center"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                  className="w-3 h-3 bg-gradient-primary rounded-full"
+                />
+              </motion.div>
+              
+              {/* Connection lines to next nodes */}
+              {i < 11 && (
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 1.5, delay: 1 + i * 0.15 }}
+                  className="absolute top-1/2 left-8 w-16 h-px bg-gradient-to-r from-electric-blue to-transparent origin-left"
                 >
                   <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                    className="w-3 h-3 bg-gradient-primary rounded-full"
+                    animate={{ x: [0, 60, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
+                    className="w-2 h-2 bg-neon-cyan rounded-full -mt-1"
                   />
                 </motion.div>
-                
-                {/* Connection lines to next nodes */}
-                {i < 7 && (
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 1.5, delay: 1 + i * 0.2 }}
-                    className="absolute top-1/2 left-8 w-16 h-px bg-gradient-to-r from-electric-blue to-transparent origin-left"
-                  >
-                    <motion.div
-                      animate={{ x: [0, 60, 0] }}
-                      transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
-                      className="w-2 h-2 bg-neon-cyan rounded-full -mt-1"
-                    />
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
+              )}
+            </div>
+          </motion.div>
+        ))}
+        
+        {/* Floating AI Symbols */}
+        {['🤖', '🧠', '⚡', '🔬', '💡', '🌐', '🔮', '🎯'].map((symbol, i) => (
+          <motion.div
+            key={`symbol-${i}`}
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ 
+              opacity: [0.3, 0.7, 0.3], 
+              y: [-20, -100, -20],
+              x: [0, 50, 0] 
+            }}
+            transition={{ 
+              duration: 8 + i * 2, 
+              repeat: Infinity, 
+              delay: i * 1.2,
+              ease: "easeInOut" 
+            }}
+            className="absolute text-2xl opacity-30"
+            style={{
+              left: `${8 + i * 12}%`,
+              top: `${75 + (i % 2) * 15}%`,
+            }}
+          >
+            {symbol}
+          </motion.div>
+        ))}
+        
+        {/* Data Stream Lines */}
+        <svg className="absolute inset-0 w-full h-full opacity-20">
+          {[...Array(6)].map((_, i) => (
+            <motion.path
+              key={`stream-${i}`}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.6 }}
+              transition={{ duration: 3, delay: i * 0.5, repeat: Infinity }}
+              d={`M ${20 + i * 15} 10 Q ${50 + i * 10} ${30 + i * 15} ${80 + i * 5} ${60 + i * 10}`}
+              stroke="url(#aiGradient)"
+              strokeWidth="1"
+              fill="none"
+              strokeDasharray="5,5"
+            />
           ))}
-
-          {/* Floating AI Symbols */}
-          {['🤖', '🧠', '⚡', '🔬', '💡', '🌐'].map((symbol, i) => (
-            <motion.div
-              key={`symbol-${i}`}
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ 
-                opacity: [0.3, 0.7, 0.3], 
-                y: [-20, -100, -20],
-                x: [0, 50, 0] 
-              }}
-              transition={{ 
-                duration: 8 + i * 2, 
-                repeat: Infinity, 
-                delay: i * 1.5,
-                ease: "easeInOut" 
-              }}
-              className="absolute text-2xl opacity-30"
-              style={{
-                left: `${10 + i * 15}%`,
-                top: `${80 + (i % 2) * 10}%`,
-              }}
-            >
-              {symbol}
-            </motion.div>
-          ))}
-
-          {/* Data Stream Lines */}
-          <svg className="absolute inset-0 w-full h-full opacity-20">
-            {[...Array(6)].map((_, i) => (
-              <motion.path
-                key={`stream-${i}`}
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 0.6 }}
-                transition={{ duration: 3, delay: i * 0.5, repeat: Infinity }}
-                d={`M ${20 + i * 15} 10 Q ${50 + i * 10} ${30 + i * 15} ${80 + i * 5} ${60 + i * 10}`}
-                stroke="url(#aiGradient)"
-                strokeWidth="1"
-                fill="none"
-                strokeDasharray="5,5"
-              />
-            ))}
-            <defs>
-              <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--electric-blue))" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="hsl(var(--neon-cyan))" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="hsl(var(--vibrant-purple))" stopOpacity="0.4" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* Circuit Board Pattern */}
-          <div className="absolute top-10 right-10 opacity-10">
-            <motion.svg
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.3 }}
-              transition={{ duration: 2, delay: 2 }}
-              width="200" 
-              height="150" 
-              viewBox="0 0 200 150"
-            >
-              <motion.path
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 4, delay: 1 }}
-                d="M20 20 L50 20 L50 50 L80 50 L80 80 L110 80 L110 110 L140 110 L140 140"
-                stroke="hsl(var(--electric-blue))"
-                strokeWidth="2"
-                fill="none"
-              />
-              <motion.path
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 4, delay: 1.5 }}
-                d="M180 30 L150 30 L150 60 L120 60 L120 90 L90 90 L90 120 L60 120"
-                stroke="hsl(var(--neon-cyan))"
-                strokeWidth="2"
-                fill="none"
-              />
-            </motion.svg>
-          </div>
-        </div>
+          <defs>
+            <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(var(--electric-blue))" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="hsl(var(--neon-cyan))" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="hsl(var(--vibrant-purple))" stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
     </section>
   );

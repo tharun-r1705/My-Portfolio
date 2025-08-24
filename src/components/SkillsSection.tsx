@@ -8,7 +8,6 @@ const aiSkills = [
   { name: 'Langchain', level: 88 },
   { name: 'TensorFlow', level: 82 },
   { name: 'LLMs', level: 92 },
-  { name: 'AI Agents', level: 85 },
 ];
 
 const fullstackSkills = [
@@ -17,7 +16,6 @@ const fullstackSkills = [
   { name: 'Python', level: 92 },
   { name: 'MongoDB', level: 86 },
   { name: 'Express', level: 90 },
-  { name: 'TypeScript', level: 89 },
 ];
 
 interface SkillBarProps {
